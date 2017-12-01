@@ -9,6 +9,9 @@ def debug(addr = '0x080486f6'):
     raw_input('debug:')
     gdb.attach(io, "b *" + addr)
 
+def base_addr(prog_addr,offset):
+    return eval(prog_addr)-offset
+
 elf = ELF('/home/h11p/hackme/pwnme2')
 
 #io = process('/home/h11p/hackme/pwnme2')
