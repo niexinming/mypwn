@@ -24,7 +24,7 @@ io = remote('hackme.inndy.tw', 7705)
 
 
 
-debug()
+#debug()
 for i in xrange(0,133):
     #time.sleep(2)
     io.recvuntil('Your action:')
